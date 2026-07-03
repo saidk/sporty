@@ -1,7 +1,7 @@
 package com.sporty.jackpot.eventsourcing.deserializer;
 
-import com.sporty.jackpot.domain.RewardPolicy;
-import com.sporty.jackpot.domain.VariableRewardPolicy;
+import com.sporty.jackpot.domain.reward.RewardPolicy;
+import com.sporty.jackpot.domain.reward.VariableRewardPolicy;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

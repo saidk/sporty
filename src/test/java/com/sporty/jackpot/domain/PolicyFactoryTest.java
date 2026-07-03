@@ -1,5 +1,11 @@
 package com.sporty.jackpot.domain;
 
+import com.sporty.jackpot.domain.contribution.ContributionPolicy;
+import com.sporty.jackpot.domain.contribution.FixedContributionPolicy;
+import com.sporty.jackpot.domain.contribution.VariableContributionPolicy;
+import com.sporty.jackpot.domain.reward.FixedRewardPolicy;
+import com.sporty.jackpot.domain.reward.RewardPolicy;
+import com.sporty.jackpot.domain.reward.VariableRewardPolicy;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

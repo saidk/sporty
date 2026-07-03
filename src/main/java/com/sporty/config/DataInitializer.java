@@ -1,10 +1,10 @@
 package com.sporty.config;
 
-import com.sporty.jackpot.domain.FixedContributionPolicy;
-import com.sporty.jackpot.domain.FixedRewardPolicy;
+import com.sporty.jackpot.domain.contribution.FixedContributionPolicy;
+import com.sporty.jackpot.domain.reward.FixedRewardPolicy;
 import com.sporty.jackpot.domain.Jackpot;
-import com.sporty.jackpot.domain.VariableContributionPolicy;
-import com.sporty.jackpot.domain.VariableRewardPolicy;
+import com.sporty.jackpot.domain.contribution.VariableContributionPolicy;
+import com.sporty.jackpot.domain.reward.VariableRewardPolicy;
 import com.sporty.jackpot.eventsourcing.EventStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

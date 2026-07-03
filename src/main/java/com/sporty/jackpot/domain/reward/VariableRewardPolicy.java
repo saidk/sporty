@@ -1,4 +1,4 @@
-package com.sporty.jackpot.domain;
+package com.sporty.jackpot.domain.reward;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

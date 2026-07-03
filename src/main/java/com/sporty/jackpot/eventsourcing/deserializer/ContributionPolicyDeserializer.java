@@ -1,6 +1,6 @@
 package com.sporty.jackpot.eventsourcing.deserializer;
 
-import com.sporty.jackpot.domain.ContributionPolicy;
+import com.sporty.jackpot.domain.contribution.ContributionPolicy;
 
 public interface ContributionPolicyDeserializer {
 

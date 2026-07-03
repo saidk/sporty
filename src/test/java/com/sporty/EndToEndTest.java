@@ -1,7 +1,7 @@
 package com.sporty;
 
-import com.sporty.jackpot.domain.FixedContributionPolicy;
-import com.sporty.jackpot.domain.FixedRewardPolicy;
+import com.sporty.jackpot.domain.contribution.FixedContributionPolicy;
+import com.sporty.jackpot.domain.reward.FixedRewardPolicy;
 import com.sporty.jackpot.domain.Jackpot;
 import com.sporty.jackpot.eventsourcing.EventStore;
 import org.junit.jupiter.api.BeforeEach;

@@ -4,11 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sporty.jackpot.domain.Jackpot;
 import com.sporty.jackpot.domain.PolicyResolver;
+import com.sporty.jackpot.domain.contribution.ContributionPolicy;
 import com.sporty.jackpot.domain.event.ContributionMade;
 import com.sporty.jackpot.domain.event.DomainEvent;
 import com.sporty.jackpot.domain.event.JackpotCreated;
 import com.sporty.jackpot.domain.event.PoolReset;
 import com.sporty.jackpot.domain.event.RewardGranted;
+import com.sporty.jackpot.domain.reward.RewardPolicy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,12 +31,12 @@ public class EventStore {
         this.objectMapper = objectMapper;
         this.policyResolver = new PolicyResolver() {
             @Override
-            public com.sporty.jackpot.domain.ContributionPolicy resolveContribution(String type, String config) {
+            public ContributionPolicy resolveContribution(String type, String config) {
                 return policyRegistry.contributionFrom(type, config);
             }
 
             @Override
-            public com.sporty.jackpot.domain.RewardPolicy resolveReward(String type, String config) {
+            public RewardPolicy resolveReward(String type, String config) {
                 return policyRegistry.rewardFrom(type, config);
             }
         };

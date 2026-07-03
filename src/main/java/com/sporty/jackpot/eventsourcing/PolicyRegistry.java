@@ -1,7 +1,7 @@
 package com.sporty.jackpot.eventsourcing;
 
-import com.sporty.jackpot.domain.ContributionPolicy;
-import com.sporty.jackpot.domain.RewardPolicy;
+import com.sporty.jackpot.domain.contribution.ContributionPolicy;
+import com.sporty.jackpot.domain.reward.RewardPolicy;
 import com.sporty.jackpot.eventsourcing.deserializer.ContributionPolicyDeserializer;
 import com.sporty.jackpot.eventsourcing.deserializer.RewardPolicyDeserializer;
 import org.springframework.stereotype.Component;
