@@ -1,5 +1,6 @@
 package com.sporty.jackpot;
 
+import com.google.common.util.concurrent.Striped;
 import com.sporty.jackpot.domain.Bet;
 import com.sporty.jackpot.domain.Jackpot;
 import com.sporty.jackpot.domain.event.ContributionMade;
@@ -18,8 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
 
 @Service
 public class JackpotService {
@@ -30,8 +30,8 @@ public class JackpotService {
     private final EventProjector projector;
     private final JackpotRewardRepository rewardRepository;
 
-    // Per-jackpot lock striping; @Retryable is a fallback for multi-instance deployments
-    private final ConcurrentHashMap<UUID, ReentrantLock> jackpotLocks = new ConcurrentHashMap<>();
+    // Fixed-size striped locks — bounded memory, distributes jackpot IDs across 64 stripes
+    private final Striped<Lock> jackpotLocks = Striped.lock(64);
 
     public JackpotService(EventStore eventStore, EventProjector projector,
                           JackpotRewardRepository rewardRepository) {
@@ -44,11 +44,11 @@ public class JackpotService {
             backoff = @Backoff(delay = 50, multiplier = 2))
     @Transactional
     public void processContribution(Bet bet) {
-        ReentrantLock lock = jackpotLocks.computeIfAbsent(bet.jackpotId(), k -> new ReentrantLock());
+        Lock lock = jackpotLocks.get(bet.jackpotId());
         lock.lock();
         try {
             Jackpot jackpot = eventStore.load(bet.jackpotId())
-                    .orElseThrow(() -> new IllegalArgumentException("Jackpot not found: " + bet.jackpotId()));
+                    .orElseThrow(() -> new NotFoundException("Jackpot not found: " + bet.jackpotId()));
 
             Optional<ContributionMade> result = jackpot.contribute(bet);
             if (result.isEmpty()) {

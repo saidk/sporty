@@ -47,7 +47,7 @@ Two jackpots are created on startup:
 | Jackpot ID | Contribution | Reward |
 |---|---|---|
 | `00000000-0000-0000-0000-000000000001` | Fixed 10% of bet | Fixed 5% chance |
-| `00000000-0000-0000-0000-000000000002` | Variable (starts 20%, decays as pool grows, 1% floor) | Variable (starts 2%, reaches 100% at pool limit 5000) |
+| `00000000-0000-0000-0000-000000000002` | Variable (starts 20%, decays toward 4% at pool threshold 2000) | Variable (starts 2%, reaches 100% at pool limit 5000) |
 
 ## API
 
@@ -110,25 +110,28 @@ Response (no win):
 
 ```
 com.sporty
-├── betting/                → Accepts bets via HTTP, publishes to Kafka
-│   ├── BetController       → POST /api/bets
-│   ├── BetService          → Orchestrates bet placement
-│   ├── BetProducer         → Async Kafka producer (keyed by jackpotId)
-│   └── BetMessage          → Kafka message DTO
+├── betting/                    → Accepts bets via HTTP, publishes to Kafka
+│   ├── BetController           → POST /api/bets
+│   ├── BetService              → Orchestrates bet placement
+│   ├── BetProducer             → Async Kafka producer (keyed by jackpotId)
+│   └── BetMessage              → Kafka message DTO
 │
-├── jackpot/                → Processes contributions, evaluates rewards
-│   ├── BetConsumer         → Kafka listener
-│   ├── JackpotService      → Orchestrates contribution + reward evaluation
-│   ├── RewardController    → GET /api/bets/{betId}/reward (read-only query)
-│   ├── BetMessage          → Kafka message DTO (own copy)
-│   ├── domain/             → Pure domain model (no framework dependencies)
-│   │   ├── Jackpot         → Aggregate root with business rules
-│   │   ├── Policies        → Contribution & reward strategy interfaces
-│   │   └── event/          → Sealed domain events
-│   ├── eventsourcing/      → Event store + policy registry (Spring-managed)
-│   └── projection/         → Read models (contributions, rewards)
+├── jackpot/                    → Processes contributions, evaluates rewards
+│   ├── BetConsumer             → Kafka listener
+│   ├── JackpotService          → Orchestrates contribution + reward evaluation
+│   ├── RewardController        → GET /api/bets/{betId}/reward (read-only)
+│   ├── BetMessage              → Kafka message DTO (own copy)
+│   ├── domain/                 → Pure domain model (no framework dependencies)
+│   │   ├── Jackpot             → Aggregate root
+│   │   ├── contribution/       → ContributionPolicy + implementations
+│   │   ├── reward/             → RewardPolicy + implementations
+│   │   ├── PolicyResolver      → Interface for policy deserialization
+│   │   └── event/              → Sealed domain events
+│   ├── eventsourcing/          → Event store + PolicyRegistry
+│   │   └── deserializer/       → Spring-discovered policy deserializers
+│   └── projection/             → Read models (contributions, rewards)
 │
-└── config/                 → Kafka topic, data seeding, error handling
+└── config/                     → Kafka topic, data seeding, error handling
 ```
 
 The `betting` context has zero imports from `jackpot`. They communicate exclusively through Kafka. Each context owns its own `BetMessage` DTO.
@@ -144,7 +147,7 @@ Each bet is evaluated for reward immediately after contribution — the bet that
 ### Concurrency Control
 
 - **Kafka partition ordering**: bets are keyed by `jackpotId`, ensuring sequential processing per jackpot at the consumer.
-- **Lock striping**: per-jackpot `ReentrantLock` serializes writes within a single instance, eliminating conflicts under heavy load.
+- **Lock striping**: Guava `Striped<Lock>` with 64 stripes serializes writes per jackpot within a single instance, with bounded memory.
 - **Optimistic locking**: `UNIQUE(aggregate_id, version)` on the event store as a safety net for multi-instance deployments.
 - **Spring Retry**: `@Retryable` with exponential backoff handles the rare conflict in distributed scenarios.
 
@@ -162,9 +165,9 @@ Three layers of protection against duplicate processing:
 
 Adding a new contribution or reward strategy:
 1. Implement the policy interface (including `type()` and `config()` for serialization)
-2. Add a `@Component` deserializer — Spring auto-discovers it via `PolicyRegistry`
+2. Add a `@Component` deserializer in `eventsourcing/deserializer/` — Spring auto-discovers it via `PolicyRegistry`
 
-No changes to the aggregate, service, or controller layers.
+No changes to the aggregate, service, controller, or registry code.
 
 ## Design Decisions
 
