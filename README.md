@@ -23,7 +23,7 @@ docker-compose up kafka -d
 ./gradlew bootRun
 ```
 
-H2 console available at `/h2-console` (JDBC URL: `jdbc:h2:mem:jackpotdb`).
+H2 console available at `/h2-console` (JDBC URL: `jdbc:h2:mem:jackpotdb`). When running via Docker, enable `spring.h2.console.settings.web-allow-others=true` in `application.yml` to allow remote access.
 
 ## Running Tests
 
